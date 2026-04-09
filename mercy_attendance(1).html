@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mercy Consultancy — Attendance</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f0f2f0;color:#1a1a1a;min-height:100vh}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}
+.login-card{background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:380px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.login-logo{text-align:center;margin-bottom:1.5rem}
+.login-logo h1{color:#1a5c2a;font-size:22px;font-weight:700}
+.login-logo p{color:#757575;font-size:13px;margin-top:4px}
+.fg{margin-bottom:1rem}
+.fg label{display:block;font-size:12px;font-weight:600;color:#757575;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.fg select,.fg input{width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;background:#fff;color:#1a1a1a;outline:none}
+.fg select:focus,.fg input:focus{border-color:#1a5c2a}
+.btn-login{width:100%;padding:12px;background:#1a5c2a;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
+.login-hint{text-align:center;font-size:11px;color:#757575;margin-top:12px}
+#app{display:none}
+.topbar{background:#1a5c2a;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-title{font-size:15px;font-weight:700}
+.topbar-sub{font-size:11px;opacity:.8;margin-top:2px}
+.role-badge{background:rgba(255,255,255,.2);border-radius:99px;padding:3px 10px;font-size:11px;font-weight:600}
+.btn-logout{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer}
+.nav-tabs{display:flex;background:#fff;border-bottom:2px solid #e0e0e0;overflow-x:auto}
+.nav-tab{padding:12px 16px;font-size:13px;font-weight:500;color:#757575;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-2px}
+.nav-tab.active{color:#1a5c2a;border-bottom-color:#1a5c2a;font-weight:600}
+.content{padding:1rem;max-width:600px;margin:0 auto}
+.card{background:#fff;border-radius:10px;padding:1rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.card-title{font-size:14px;font-weight:700;color:#1a5c2a;margin-bottom:12px}
+.sec-label{font-size:11px;font-weight:700;color:#757575;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.company-select{width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;background:#fff;margin-bottom:1rem;outline:none}
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:1rem}
+.stat-box{background:#fff;border-radius:8px;padding:8px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.stat-num{font-size:20px;font-weight:700}
+.stat-label{font-size:10px;color:#757575;margin-top:2px}
+.worker-row{display:flex;flex-direction:column;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f5f5f5}
+.worker-row:last-child{border:none}
+.worker-name{font-size:14px;font-weight:500}
+.worker-meta{font-size:11px;color:#757575}
+.status-btn{padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;border:none;cursor:default;min-width:70px;text-align:center}
+.s-present{background:#e8f5eb;color:#2d7a3e}
+.s-late{background:#fef3e2;color:#d35400}
+.s-absent{background:#fdecea;color:#c0392b}
+.s-medical{background:#fef3e2;color:#e67e22}
+.s-mi{background:#e8f0fa;color:#1a4a7a}
+.s-mia{background:#f3e8ff;color:#6b21a8}
+.s-none{background:#f5f5f5;color:#757575}
+.sp-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.sp-btn{padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;border:2px solid;cursor:pointer}
+.sp-present{background:#e8f5eb;color:#2d7a3e;border-color:#2d7a3e}
+.sp-late{background:#fef3e2;color:#d35400;border-color:#d35400}
+.sp-absent{background:#fdecea;color:#c0392b;border-color:#c0392b}
+.sp-medical{background:#fef3e2;color:#e67e22;border-color:#e67e22}
+.sp-mi{background:#e8f0fa;color:#1a4a7a;border-color:#1a4a7a}
+.sp-mia{background:#f3e8ff;color:#6b21a8;border-color:#6b21a8}
+.time-wrap{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;align-items:flex-start;width:100%}
+.time-group{flex:1;min-width:140px}
+.time-label{font-size:11px;color:#757575;font-weight:600;margin-bottom:4px}
+.time-selects{display:flex;gap:4px}
+.time-sel{flex:1;padding:6px;border:1px solid #e0e0e0;border-radius:6px;font-size:12px;background:#fff}
+.note-item{font-size:11px;color:#555;background:#f5f5f5;border-radius:4px;padding:4px 8px;margin-top:4px}
+.note-time{color:#757575;font-size:10px}
+.note-row{display:flex;gap:6px;margin-top:6px}
+.note-input{flex:1;padding:7px 10px;border:1px solid #e0e0e0;border-radius:6px;font-size:12px}
+.btn-note{padding:7px 12px;background:#e8f5eb;color:#1a5c2a;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer}
+.btn{padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;margin-bottom:4px}
+.btn-primary{background:#1a5c2a;color:#fff}
+.btn-secondary{background:#f5f5f5;color:#1a1a1a}
+.btn-danger{background:#fdecea;color:#c0392b}
+.btn-wa{background:#25D366;color:#fff}
+.btn-pdf{background:#fdecea;color:#c0392b}
+.btn-full{width:100%;display:block;margin-bottom:8px}
+.input-field{width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;margin-bottom:8px;outline:none;background:#fff;color:#1a1a1a}
+.worker-admin-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f5f5f5}
+.worker-admin-row:last-child{border:none}
+.wi-name{font-size:14px;font-weight:500;flex:1}
+.wi-meta{font-size:11px;color:#757575}
+.badge-active{background:#e8f5eb;color:#2d7a3e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+.badge-terminated{background:#fdecea;color:#c0392b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+.badge-pending{background:#fef3e2;color:#e67e22;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+.report-table{width:100%;border-collapse:collapse;font-size:12px}
+.report-table th{background:#1a5c2a;color:#fff;padding:8px 10px;text-align:left}
+.report-table td{padding:7px 10px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+.report-table tr:nth-child(even) td{background:#f9f9f9}
+.date-nav{display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+.date-nav button{background:#f5f5f5;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:16px}
+.date-nav span{flex:1;text-align:center;font-weight:600;font-size:14px}
+.empty-state{text-align:center;padding:2rem;color:#757575;font-size:13px}
+.company-check{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.company-check label{display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo"><h1>Mercy Consultancy</h1><p>Attendance Management System</p></div>
+    <div class="fg"><label>Role</label>
+      <select id="login-role" onchange="prefillLogin()">
+        <option value="master">Master</option>
+        <option value="admin">Admin</option>
+        <option value="supervisor">Supervisor</option>
+      </select>
+    </div>
+    <div class="fg"><label>Username</label><input type="text" id="login-user" placeholder="Enter username"></div>
+    <div class="fg"><label>Password</label><input type="password" id="login-pass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn-login" onclick="doLogin()">Sign In</button>
+    <p class="login-hint">master/master123 &nbsp;·&nbsp; admin/admin123 &nbsp;·&nbsp; supervisor/super123</p>
+  </div>
+</div>
+<div id="app">
+  <div class="topbar">
+    <div><div class="topbar-title">Mercy Consultancy</div><div class="topbar-sub" id="topbar-sub"></div></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="role-badge" id="role-badge"></span>
+      <button class="btn-logout" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+  <div class="nav-tabs" id="nav-tabs"></div>
+  <div class="content" id="main-content"></div>
+</div>
+<script>
+var DB = {
+  version: 9,
+  companies: [
+    {id:'c6', name:'Kenvue — Red Shift'},
+    {id:'c7', name:'Kenvue — Blue Shift'},
+    {id:'c8', name:'Ceva — Red Shift'},
+    {id:'c9', name:'Ceva — Blue Shift'},
+    {id:'c10', name:'Kah Ban Trading Sdn Bhd'},
+    {id:'c11', name:'Phywon Ingredients'},
+    {id:'c12', name:'Believe'},
+    {id:'c13', name:'Choice Privilege'},
+    {id:'c14', name:'Palmech Tech'},
+    {id:'c15', name:'Chemedis'},
+    {id:'c16', name:'Gourmet'},
+    {id:'c17', name:'Proza'},
+    {id:'c18', name:'Balchem'},
+    {id:'c19', name:'Promac'},
+    {id:'c20', name:'VCS'},
+    {id:'c21', name:'Restobar'},
+    {id:'c22', name:'Mikro Nilai'},
+    {id:'c23', name:'Alpha Brake'},
+    {id:'c24', name:'Twincycle'}
+  ],
+  workers: [
+    {id:'w1', cid:'c6', name:'NOR AZIZAH BINTI IBRAHIM', joinDate:'2026-01-01', status:'active'},
+    {id:'w2', cid:'c6', name:'ROS MALIZA BINTI LODIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w3', cid:'c6', name:'NAZITA BINTI ABDUL RAZAK', joinDate:'2026-01-01', status:'active'},
+    {id:'w4', cid:'c6', name:'ALLA BINTI SHOIB', joinDate:'2026-01-01', status:'active'},
+    {id:'w5', cid:'c6', name:'SAZALIZA BINTI MD DALI', joinDate:'2026-01-01', status:'active'},
+    {id:'w6', cid:'c6', name:'SUHARFATINI BINTI RAMLI', joinDate:'2026-01-01', status:'active'},
+    {id:'w7', cid:'c6', name:'NURUL AINI BINTI MUSTAFA', joinDate:'2026-01-01', status:'active'},
+    {id:'w8', cid:'c6', name:'KOMALAH A/P LATHMANA', joinDate:'2026-01-01', status:'active'},
+    {id:'w9', cid:'c6', name:'SHAHRUL AZMI BIN HARUN', joinDate:'2026-01-01', status:'active'},
+    {id:'w10', cid:'c6', name:'MUHAMMAD ALIM SHAH BIN ABDUL RAHMAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w11', cid:'c6', name:'AMIRUL ISKANDAR BIN KHAIRULLNIZAM', joinDate:'2026-01-01', status:'active'},
+    {id:'w12', cid:'c6', name:'MOHAMED AZMI BIN NAVASKHAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w13', cid:'c6', name:'AHMAD LIZAM BIN MOKHTAR', joinDate:'2026-01-01', status:'active'},
+    {id:'w14', cid:'c6', name:'ROSHAN BIN BENHAR', joinDate:'2026-01-01', status:'active'},
+    {id:'w15', cid:'c6', name:'MANAN BIN OSMAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w16', cid:'c6', name:'MOHD YAZID BIN MOHD TAHA', joinDate:'2026-01-01', status:'active'},
+    {id:'w17', cid:'c6', name:'MOHD AZWAN BIN ZULKIFLEE', joinDate:'2026-01-01', status:'active'},
+    {id:'w18', cid:'c6', name:'ABD RAZAK BIN JAILAMIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w19', cid:'c6', name:'RAGEN A/L INDRAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w20', cid:'c6', name:'THILLAIYAMBIGAI A/P SIGARMANY', joinDate:'2026-01-01', status:'active'},
+    {id:'w21', cid:'c6', name:'MUHAMMAD ZAHID BIN MAT ZEBERI', joinDate:'2026-01-01', status:'active'},
+    {id:'w22', cid:'c6', name:'AZIZUL BIN SAMAD', joinDate:'2026-01-01', status:'active'},
+    {id:'w23', cid:'c6', name:'SUBRAMANIAM A/L RAJENDRAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w24', cid:'c6', name:'WAN MOHAMMAD ADAM HAKIMI BIN WAN AZIZ', joinDate:'2026-01-01', status:'active'},
+    {id:'w25', cid:'c7', name:'MUHAMMAD AZRIE RIDWAN RANA BIN MD MASUD RANA', joinDate:'2026-01-01', status:'active'},
+    {id:'w26', cid:'c7', name:'MUHAMAD RIDHWAN SYAFIQ BIN SURIZAM', joinDate:'2026-01-01', status:'active'},
+    {id:'w27', cid:'c7', name:'MOHAMMAD ASNAWIE BIN ABDULLAH', joinDate:'2026-01-01', status:'active'},
+    {id:'w28', cid:'c7', name:'MUHAMMAD AMIRUL BIN ZULKIFLI', joinDate:'2026-01-01', status:'active'},
+    {id:'w29', cid:'c7', name:'MUHAMMAD AZMEER RIDWAN RANA BIN MD MASUD RANA', joinDate:'2026-01-01', status:'active'},
+    {id:'w30', cid:'c7', name:'MUHAMMAD FIRDAUS BIN SAGIMON', joinDate:'2026-01-01', status:'active'},
+    {id:'w31', cid:'c7', name:'MUHAMMAD NUR AFZAN BIN MOHD RAJULI', joinDate:'2026-01-01', status:'active'},
+    {id:'w32', cid:'c7', name:'MURUGAN A/L THANGIAH', joinDate:'2026-01-01', status:'active'},
+    {id:'w33', cid:'c7', name:'LOGANRAJ A/L THANGARAJU', joinDate:'2026-01-01', status:'active'},
+    {id:'w34', cid:'c7', name:'SIVALINGAM A/L MUNIAPPAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w35', cid:'c7', name:'THANESH A/L RAMADASS', joinDate:'2026-01-01', status:'active'},
+    {id:'w36', cid:'c7', name:'SANTHA A/P SUBRAMANIAM', joinDate:'2026-01-01', status:'active'},
+    {id:'w37', cid:'c7', name:'LEELAVATI A/P SIVANATHAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w38', cid:'c7', name:'CHE ROZILA BINTI MAT ZAIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w39', cid:'c7', name:'MORIA BINTI PETRUS', joinDate:'2026-01-01', status:'active'},
+    {id:'w40', cid:'c7', name:'NOR ATIEKAH BINTI ZULKAPLI', joinDate:'2026-01-01', status:'active'},
+    {id:'w41', cid:'c7', name:'NOR AZLINA BINTI MOHHAMAD NURUDDIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w42', cid:'c7', name:'NORNIZA BINTI HUSSIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w43', cid:'c7', name:'SARIAH BINTI NORDIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w44', cid:'c7', name:'SITI MOHARROMA BINTI SAIRI', joinDate:'2026-01-01', status:'active'},
+    {id:'w45', cid:'c7', name:'NORIDAH BT NOORDIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w46', cid:'c7', name:'SHAM SAHARA BINTI MOHD SAIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w47', cid:'c7', name:'ROSLIANAWATI BINTI LAKIM', joinDate:'2026-01-01', status:'active'},
+    {id:'w48', cid:'c7', name:'SARINAH BINTI ABDULLAH', joinDate:'2026-01-01', status:'active'},
+    {id:'w49', cid:'c7', name:'RIMA NOVIAR BINTI ARMA RAIS', joinDate:'2026-01-01', status:'active'},
+    {id:'w50', cid:'c8', name:'JASVINDER SINGH', joinDate:'2026-01-01', status:'active'},
+    {id:'w51', cid:'c8', name:'PARDEEP SINGH', joinDate:'2026-01-01', status:'active'},
+    {id:'w52', cid:'c8', name:'ABU SALIM', joinDate:'2026-01-01', status:'active'},
+    {id:'w53', cid:'c8', name:'LOGESWARAN A/L TAMILCHELVAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w54', cid:'c9', name:'MUHAMMAD KHALIL', joinDate:'2026-01-01', status:'active'},
+    {id:'w55', cid:'c9', name:'BUNTY KUMAR', joinDate:'2026-01-01', status:'active'},
+    {id:'w56', cid:'c9', name:'DAVINDER SINGH', joinDate:'2026-01-01', status:'active'},
+    {id:'w57', cid:'c9', name:'MOHAMMAD MURSALIM BIN TAMMAY', joinDate:'2026-01-01', status:'active'},
+    {id:'w58', cid:'c10', name:'AUNG KYAW SWEE', joinDate:'2026-01-01', status:'active'},
+    {id:'w59', cid:'c10', name:'MIN THET ZAW', joinDate:'2026-01-01', status:'active'},
+    {id:'w60', cid:'c10', name:'HTET KO OO', joinDate:'2026-01-01', status:'active'},
+    {id:'w61', cid:'c11', name:'Harpreet', joinDate:'2026-01-01', status:'active'},
+    {id:'w62', cid:'c11', name:'Neyar', joinDate:'2026-01-01', status:'active'},
+    {id:'w63', cid:'c12', name:'Kanhaiya', joinDate:'2026-01-01', status:'active'},
+    {id:'w64', cid:'c12', name:'Param', joinDate:'2026-01-01', status:'active'},
+    {id:'w65', cid:'c12', name:'Sandeep', joinDate:'2026-01-01', status:'active'},
+    {id:'w66', cid:'c13', name:'RAJU', joinDate:'2026-01-01', status:'active'},
+    {id:'w67', cid:'c13', name:'SUMI KUMAR', joinDate:'2026-01-01', status:'active'},
+    {id:'w68', cid:'c14', name:'Bunty Kumar', joinDate:'2026-01-01', status:'active'},
+    {id:'w69', cid:'c14', name:'Ramaya', joinDate:'2026-01-01', status:'active'},
+    {id:'w70', cid:'c14', name:'Hans Raj', joinDate:'2026-01-01', status:'active'},
+    {id:'w71', cid:'c15', name:'Imran Ali', joinDate:'2026-01-01', status:'active'},
+    {id:'w72', cid:'c16', name:'TAJU', joinDate:'2026-01-01', status:'active'},
+    {id:'w73', cid:'c16', name:'SHAHIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w74', cid:'c16', name:'HOSSAIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w75', cid:'c16', name:'RAHIM ABDUR', joinDate:'2026-01-01', status:'active'},
+    {id:'w76', cid:'c17', name:'Haq Nawaz', joinDate:'2026-01-01', status:'active'},
+    {id:'w77', cid:'c17', name:'Suresh Choundhary', joinDate:'2026-01-01', status:'active'},
+    {id:'w78', cid:'c17', name:'Million', joinDate:'2026-01-01', status:'active'},
+    {id:'w79', cid:'c17', name:'Satnam Singh', joinDate:'2026-01-01', status:'active'},
+    {id:'w80', cid:'c17', name:'Mehboob Ruhool', joinDate:'2026-01-01', status:'active'},
+    {id:'w81', cid:'c17', name:'Belal Hossain', joinDate:'2026-01-01', status:'active'},
+    {id:'w82', cid:'c17', name:'Samsul HAQ', joinDate:'2026-01-01', status:'active'},
+    {id:'w83', cid:'c17', name:'Rohit Kumar', joinDate:'2026-01-01', status:'active'},
+    {id:'w84', cid:'c17', name:'Akshay Kumar', joinDate:'2026-01-01', status:'active'},
+    {id:'w85', cid:'c17', name:'Umar Farooq', joinDate:'2026-01-01', status:'active'},
+    {id:'w86', cid:'c17', name:'Obaidul Molla', joinDate:'2026-01-01', status:'active'},
+    {id:'w87', cid:'c17', name:'Jahanur Rahman', joinDate:'2026-01-01', status:'active'},
+    {id:'w88', cid:'c17', name:'Jaswinder Singh', joinDate:'2026-01-01', status:'active'},
+    {id:'w89', cid:'c17', name:'Prasad Chastradari', joinDate:'2026-01-01', status:'active'},
+    {id:'w90', cid:'c17', name:'Gulfham Ali', joinDate:'2026-01-01', status:'active'},
+    {id:'w91', cid:'c17', name:'Intezar', joinDate:'2026-01-01', status:'active'},
+    {id:'w92', cid:'c17', name:'Somair', joinDate:'2026-01-01', status:'active'},
+    {id:'w93', cid:'c17', name:'Roshan Sagor', joinDate:'2026-01-01', status:'active'},
+    {id:'w94', cid:'c17', name:'Nikhil Choundary', joinDate:'2026-01-01', status:'active'},
+    {id:'w95', cid:'c17', name:'AKASH', joinDate:'2026-01-01', status:'active'},
+    {id:'w96', cid:'c17', name:'ANAMUL', joinDate:'2026-01-01', status:'active'},
+    {id:'w97', cid:'c17', name:'Gurpreet Singh', joinDate:'2026-01-01', status:'active'},
+    {id:'w98', cid:'c17', name:'MAQSOOD', joinDate:'2026-01-01', status:'active'},
+    {id:'w99', cid:'c17', name:'ALI', joinDate:'2026-01-01', status:'active'},
+    {id:'w100', cid:'c18', name:'Arif', joinDate:'2026-01-01', status:'active'},
+    {id:'w101', cid:'c18', name:'Arun', joinDate:'2026-01-01', status:'active'},
+    {id:'w102', cid:'c18', name:'Usama', joinDate:'2026-01-01', status:'active'},
+    {id:'w103', cid:'c18', name:'Lakhveer', joinDate:'2026-01-01', status:'active'},
+    {id:'w104', cid:'c18', name:'Sudam Husan', joinDate:'2026-01-01', status:'active'},
+    {id:'w105', cid:'c19', name:'MC224 NIRJAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w106', cid:'c19', name:'MC155 KARAMJIT SINGH', joinDate:'2026-01-01', status:'active'},
+    {id:'w107', cid:'c19', name:'MC158 PARDEEP SINGH', joinDate:'2026-01-01', status:'active'},
+    {id:'w108', cid:'c19', name:'MC190 HANS RAJ', joinDate:'2026-01-01', status:'active'},
+    {id:'w109', cid:'c19', name:'MC220 THAKUR PURAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w110', cid:'c19', name:'MC221 YE THURA AUNG', joinDate:'2026-01-01', status:'active'},
+    {id:'w111', cid:'c19', name:'MC168 CHIT SAN AUNG', joinDate:'2026-01-01', status:'active'},
+    {id:'w112', cid:'c19', name:'MC169 NYI NYI LWIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w113', cid:'c19', name:'MC170 MELKER SAHADAD', joinDate:'2026-01-01', status:'active'},
+    {id:'w114', cid:'c19', name:'MC184 ANSAR ALI', joinDate:'2026-01-01', status:'active'},
+    {id:'w115', cid:'c19', name:'MC222 PHOE LA PGAE', joinDate:'2026-01-01', status:'active'},
+    {id:'w116', cid:'c19', name:'MC175 SEENU EZHUMALAI', joinDate:'2026-01-01', status:'active'},
+    {id:'w117', cid:'c19', name:'MC176 SELVAM RAMU', joinDate:'2026-01-01', status:'active'},
+    {id:'w118', cid:'c19', name:'MC194 MYINT NAING', joinDate:'2026-01-01', status:'active'},
+    {id:'w119', cid:'c19', name:'MC161 PRINCE', joinDate:'2026-01-01', status:'active'},
+    {id:'w120', cid:'c19', name:'MC201 JASVIR', joinDate:'2026-01-01', status:'active'},
+    {id:'w121', cid:'c19', name:'MC196 NATHESAN GOVIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w122', cid:'c19', name:'MC216 AUNG MYAT THU', joinDate:'2026-01-01', status:'active'},
+    {id:'w123', cid:'c19', name:'MC227 MANPREET', joinDate:'2026-01-01', status:'active'},
+    {id:'w124', cid:'c19', name:'MC231 AUNG MYO MIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w125', cid:'c19', name:'IQBAL', joinDate:'2026-01-01', status:'active'},
+    {id:'w126', cid:'c19', name:'EYASIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w127', cid:'c19', name:'ALL AMIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w128', cid:'c19', name:'SAMEER', joinDate:'2026-01-01', status:'active'},
+    {id:'w129', cid:'c19', name:'SUBHAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w130', cid:'c19', name:'MC229 MOE MYINT ZAW', joinDate:'2026-01-01', status:'active'},
+    {id:'w131', cid:'c19', name:'MC230 SHINE MIN KO', joinDate:'2026-01-01', status:'active'},
+    {id:'w132', cid:'c20', name:'GIN SIAN DAL', joinDate:'2026-01-01', status:'active'},
+    {id:'w133', cid:'c20', name:'HTET LU', joinDate:'2026-01-01', status:'active'},
+    {id:'w134', cid:'c20', name:'NANG KHIN TUANG', joinDate:'2026-01-01', status:'active'},
+    {id:'w135', cid:'c20', name:'YE ZAW', joinDate:'2026-01-01', status:'active'},
+    {id:'w136', cid:'c20', name:'NAY LIN OO', joinDate:'2026-01-01', status:'active'},
+    {id:'w137', cid:'c20', name:'NYIEN ZAW', joinDate:'2026-01-01', status:'active'},
+    {id:'w138', cid:'c20', name:'AUNG MYINT KYAW', joinDate:'2026-01-01', status:'active'},
+    {id:'w139', cid:'c20', name:'MYO HALING WIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w140', cid:'c20', name:'AUNG HEIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w141', cid:'c20', name:'KYAW ZIN HEIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w142', cid:'c21', name:'Sukhdev', joinDate:'2026-01-01', status:'active'},
+    {id:'w143', cid:'c21', name:'VINAY', joinDate:'2026-01-01', status:'active'},
+    {id:'w144', cid:'c22', name:'Nazmul Hasan', joinDate:'2026-01-01', status:'active'},
+    {id:'w145', cid:'c22', name:'Matiur Rahman', joinDate:'2026-01-01', status:'active'},
+    {id:'w146', cid:'c22', name:'Rajamanickam', joinDate:'2026-01-01', status:'active'},
+    {id:'w147', cid:'c22', name:'Mohhamad Rabbani', joinDate:'2026-01-01', status:'active'},
+    {id:'w148', cid:'c22', name:'Kabir Hossain', joinDate:'2026-01-01', status:'active'},
+    {id:'w149', cid:'c22', name:'ABDUL AHAD', joinDate:'2026-01-01', status:'active'},
+    {id:'w150', cid:'c22', name:'SUMON RAHMAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w151', cid:'c22', name:'ASAD KHAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w152', cid:'c22', name:'EMON SARKAR SHOVO', joinDate:'2026-01-01', status:'active'},
+    {id:'w153', cid:'c22', name:'SADDIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w154', cid:'c22', name:'MAHMUD APPLE', joinDate:'2026-01-01', status:'active'},
+    {id:'w155', cid:'c22', name:'ASHIK', joinDate:'2026-01-01', status:'active'},
+    {id:'w156', cid:'c22', name:'SHAWKOT', joinDate:'2026-01-01', status:'active'},
+    {id:'w157', cid:'c22', name:'RIFAT', joinDate:'2026-01-01', status:'active'},
+    {id:'w158', cid:'c22', name:'RONY MOLA', joinDate:'2026-01-01', status:'active'},
+    {id:'w159', cid:'c22', name:'SARAJUL ISLAM', joinDate:'2026-01-01', status:'active'},
+    {id:'w160', cid:'c22', name:'SHABUDIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w161', cid:'c22', name:'MIZANUR MALITA', joinDate:'2026-01-01', status:'active'},
+    {id:'w162', cid:'c22', name:'MATUBBER AKASH', joinDate:'2026-01-01', status:'active'},
+    {id:'w163', cid:'c22', name:'JIHAD', joinDate:'2026-01-01', status:'active'},
+    {id:'w164', cid:'c22', name:'SAMEER AHAMAD', joinDate:'2026-01-01', status:'active'},
+    {id:'w165', cid:'c22', name:'MOHAMMAD IQBAL', joinDate:'2026-01-01', status:'active'},
+    {id:'w166', cid:'c22', name:'MOHAMMAD SUBHAN', joinDate:'2026-01-01', status:'active'},
+    {id:'w167', cid:'c22', name:'MOLLA ANONDO', joinDate:'2026-01-01', status:'active'},
+    {id:'w168', cid:'c23', name:'Vijay', joinDate:'2026-01-01', status:'active'},
+    {id:'w169', cid:'c23', name:'Papu Kumar', joinDate:'2026-01-01', status:'active'},
+    {id:'w170', cid:'c23', name:'Kamal Vir', joinDate:'2026-01-01', status:'active'},
+    {id:'w171', cid:'c23', name:'Hassan', joinDate:'2026-01-01', status:'active'},
+    {id:'w172', cid:'c23', name:'Janathkan', joinDate:'2026-01-01', status:'active'},
+    {id:'w173', cid:'c23', name:'Balwinder', joinDate:'2026-01-01', status:'active'},
+    {id:'w174', cid:'c23', name:'Deepak', joinDate:'2026-01-01', status:'active'},
+    {id:'w175', cid:'c23', name:'Aman', joinDate:'2026-01-01', status:'active'},
+    {id:'w176', cid:'c23', name:'Maninder', joinDate:'2026-01-01', status:'active'},
+    {id:'w177', cid:'c23', name:'Prabjot', joinDate:'2026-01-01', status:'active'},
+    {id:'w178', cid:'c23', name:'Hardeep Singh', joinDate:'2026-01-01', status:'active'},
+    {id:'w179', cid:'c23', name:'Nandan', joinDate:'2026-01-01', status:'active'},
+    {id:'w180', cid:'c23', name:'Dharmveer', joinDate:'2026-01-01', status:'active'},
+    {id:'w181', cid:'c23', name:'Rampal', joinDate:'2026-01-01', status:'active'},
+    {id:'w182', cid:'c23', name:'Bobby', joinDate:'2026-01-01', status:'active'},
+    {id:'w183', cid:'c23', name:'Nikhil', joinDate:'2026-01-01', status:'active'},
+    {id:'w184', cid:'c23', name:'Bant Singh', joinDate:'2026-01-01', status:'active'},
+    {id:'w185', cid:'c23', name:'Pappu Singh', joinDate:'2026-01-01', status:'active'},
+    {id:'w186', cid:'c23', name:'Gurvinder Singh', joinDate:'2026-01-01', status:'active'},
+    {id:'w187', cid:'c23', name:'Manish Kumar', joinDate:'2026-01-01', status:'active'},
+    {id:'w188', cid:'c23', name:'Varinder Singh', joinDate:'2026-01-01', status:'active'},
+    {id:'w189', cid:'c23', name:'Jaskaran', joinDate:'2026-01-01', status:'active'},
+    {id:'w190', cid:'c23', name:'Arun Kumar', joinDate:'2026-01-01', status:'active'},
+    {id:'w191', cid:'c23', name:'Rajat', joinDate:'2026-01-01', status:'active'},
+    {id:'w192', cid:'c23', name:'Gurbaksh', joinDate:'2026-01-01', status:'active'},
+    {id:'w193', cid:'c23', name:'Ravikumar', joinDate:'2026-01-01', status:'active'},
+    {id:'w194', cid:'c24', name:'TIN LIN HTWE', joinDate:'2026-01-01', status:'active'},
+    {id:'w195', cid:'c24', name:'KYAW SWAR WIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w196', cid:'c24', name:'THIKE SOE', joinDate:'2026-01-01', status:'active'},
+    {id:'w197', cid:'c24', name:'AUNG THU NYEIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w198', cid:'c24', name:'ZAW LAY MYINT', joinDate:'2026-01-01', status:'active'},
+    {id:'w199', cid:'c24', name:'SAN MAUNG', joinDate:'2026-01-01', status:'active'},
+    {id:'w200', cid:'c24', name:'HLAING KYAW', joinDate:'2026-01-01', status:'active'},
+    {id:'w201', cid:'c24', name:'MYO CHIT', joinDate:'2026-01-01', status:'active'},
+    {id:'w202', cid:'c24', name:'KYAW MYO HEIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w203', cid:'c24', name:'KO KO NAING', joinDate:'2026-01-01', status:'active'},
+    {id:'w204', cid:'c24', name:'TIN MYO NAING', joinDate:'2026-01-01', status:'active'},
+    {id:'w205', cid:'c24', name:'KHIN TUN NAING', joinDate:'2026-01-01', status:'active'},
+    {id:'w206', cid:'c24', name:'AYE KO', joinDate:'2026-01-01', status:'active'},
+    {id:'w207', cid:'c24', name:'SOE MYO KYAW', joinDate:'2026-01-01', status:'active'},
+    {id:'w208', cid:'c24', name:'PAING SOE', joinDate:'2026-01-01', status:'active'},
+    {id:'w209', cid:'c24', name:'MYO ZAW', joinDate:'2026-01-01', status:'active'},
+    {id:'w210', cid:'c24', name:'NAY YE OO', joinDate:'2026-01-01', status:'active'},
+    {id:'w211', cid:'c24', name:'KAUNG HTET THU', joinDate:'2026-01-01', status:'active'},
+    {id:'w212', cid:'c24', name:'WAI LIN TUN', joinDate:'2026-01-01', status:'active'},
+    {id:'w213', cid:'c24', name:'KYI SOE', joinDate:'2026-01-01', status:'active'},
+    {id:'w214', cid:'c24', name:'SAW JET NYUNT', joinDate:'2026-01-01', status:'active'},
+    {id:'w215', cid:'c24', name:'TUN LONE SHEIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w216', cid:'c24', name:'PHONE NAING', joinDate:'2026-01-01', status:'active'},
+    {id:'w217', cid:'c24', name:'KHUN HAN THEIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w218', cid:'c24', name:'SAI MYAT THU', joinDate:'2026-01-01', status:'active'},
+    {id:'w219', cid:'c24', name:'NYI NYI LWIN', joinDate:'2026-01-01', status:'active'},
+    {id:'w220', cid:'c24', name:'HEIN MIN HTET', joinDate:'2026-01-01', status:'active'},
+    {id:'w221', cid:'c24', name:'SAW BO PYAW', joinDate:'2026-01-01', status:'active'},
+    {id:'w222', cid:'c24', name:'SAW KA BRU MOO', joinDate:'2026-01-01', status:'active'},
+    {id:'w223', cid:'c24', name:'THAT ZIN OO', joinDate:'2026-01-01', status:'active'},
+    {id:'w224', cid:'c24', name:'WIN LWIN OO', joinDate:'2026-01-01', status:'active'},
+    {id:'w225', cid:'c24', name:'KHANT KO KO NAING', joinDate:'2026-01-01', status:'active'}
+  ],
+  attendance: {},
+  users: {
+    master: [{username:'master',password:'master123',name:'Jonathan Varkey'}],
+    admin: [
+      {username:'admin',password:'admin123',name:'Selva Kumar',companies:['c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24']},
+      {username:'joey',password:'joey123',name:'Joey Tan',companies:['c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24']}
+    ],
+    supervisor: [
+      {username:'supervisor',password:'super123',name:'Field Supervisor 1',companies:['c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24']}
+    ]
+  }
+};
+
+var currentUser = null;
+var currentRole = null;
+var currentTab = 'attendance';
+var selectedCompany = 'c6';
+var currentDate = todayStr();
+
+function todayStr() { var d=new Date(); var y=d.getFullYear(); var mo=String(d.getMonth()+1).padStart(2,'0'); var dy=String(d.getDate()).padStart(2,'0'); return y+'-'+mo+'-'+dy; }
+
+function fmtDate(d) {
+  if(!d) return '';
+  var dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function saveDB() { try { localStorage.setItem('mercy_v9', JSON.stringify(DB)); } catch(e){} }
+
+function loadDB() {
+  try {
+    ['mercy_v4','mercy_v3','mercy_v2','mercy_v1','mercy_db'].forEach(function(k){localStorage.removeItem(k);});
+    var s = localStorage.getItem('mercy_v9');
+    if(s) { var saved = JSON.parse(s); if(saved && saved.version === 9) { DB = saved; return; } }
+  } catch(e){}
+}
+
+loadDB();
+
+function prefillLogin() {
+  var r = document.getElementById('login-role').value;
+  document.getElementById('login-user').value = r === 'master' ? 'master' : r === 'admin' ? 'admin' : 'supervisor';
+}
+
+function doLogin() {
+  var role = document.getElementById('login-role').value;
+  var user = document.getElementById('login-user').value.trim();
+  var pass = document.getElementById('login-pass').value;
+  var users = DB.users[role] || [];
+  var found = null;
+  for(var i=0;i<users.length;i++) { if(users[i].username===user && users[i].password===pass){found=users[i];break;} }
+  if(!found) { alert('Invalid username or password.'); return; }
+  currentUser = found; currentRole = role;
+  selectedCompany = getUserCompanies()[0] ? getUserCompanies()[0].id : 'c6';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('role-badge').textContent = role.charAt(0).toUpperCase()+role.slice(1);
+  document.getElementById('topbar-sub').textContent = found.name;
+  buildNav();
+  showTab('attendance');
+}
+
+function doLogout() {
+  currentUser=null; currentRole=null; currentTab='attendance';
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-pass').value='';
+}
+
+function getUserCompanies() {
+  if(currentRole==='master') return DB.companies;
+  return DB.companies.filter(function(c){ return (currentUser.companies||[]).indexOf(c.id)!==-1; });
+}
+
+function buildNav() {
+  var tabDefs = {master:['attendance','reports','admin','master'],admin:['attendance','reports','admin'],supervisor:['attendance','reports']};
+  var labels = {attendance:'Attendance',reports:'Reports',admin:'Manage Workers',master:'Master Control'};
+  var tabs = tabDefs[currentRole] || ['attendance'];
+  var html = '';
+  tabs.forEach(function(t){
+    html += '<div class="nav-tab' + (t===currentTab?' active':'') + '" onclick="showTab(\'' + t + '\')">' + labels[t] + '</div>';
+  });
+  document.getElementById('nav-tabs').innerHTML = html;
+}
+
+function showTab(tab) {
+  currentTab = tab;
+  buildNav();
+  var c = document.getElementById('main-content');
+  if(tab==='attendance') c.innerHTML = buildAttendance();
+  else if(tab==='reports') c.innerHTML = buildReports();
+  else if(tab==='admin') c.innerHTML = buildAdmin();
+  else if(tab==='master') c.innerHTML = buildMasterControl();
+  fillCompanyDropdowns();
+}
+
+function fillCompanyDropdowns() {
+  var companies = getUserCompanies();
+  ['co-att','co-adm','co-rep'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = '';
+    if(id==='co-rep' && currentRole==='master') {
+      var opt = document.createElement('option'); opt.value='all'; opt.textContent='All Companies'; el.appendChild(opt);
+    }
+    companies.forEach(function(c){
+      var opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.name;
+      if(c.id===selectedCompany) opt.selected = true;
+      el.appendChild(opt);
+    });
+  });
+}
+
+// ── ATTENDANCE ────────────────────────────────────────────────────
+function buildAttendance() {
+  var companies = getUserCompanies();
+  if(!selectedCompany || !companies.filter(function(c){return c.id===selectedCompany;}).length) selectedCompany = companies[0]?companies[0].id:'c6';
+  var workers = DB.workers.filter(function(w){return w.cid===selectedCompany && w.status==='active';});
+  var dateKey = currentDate+'_'+selectedCompany;
+  var att = DB.attendance[dateKey] || {};
+  var p=0,late=0,a=0,m=0,mi=0,mia=0;
+  workers.forEach(function(w){
+    var s = att[w.id] ? att[w.id].status : null;
+    if(s==='Present')p++; else if(s==='Late')late++; else if(s==='Absent')a++; else if(s==='Medical')m++; else if(s==='MI')mi++; else if(s==='MIA')mia++;
+  });
+
+  var html = '<select class="company-select" id="co-att" onchange="selectedCompany=this.value;showTab(\'attendance\')"></select>';
+  html += '<div class="date-nav">';
+  html += '<button onclick="changeDate(-1)">&#8249;</button>';
+  html += '<span>' + fmtDate(currentDate) + '</span>';
+  html += '<button onclick="changeDate(1)"' + (currentDate>=todayStr()?' disabled':'') + '>&#8250;</button>';
+  html += '<button onclick="currentDate=todayStr();showTab(\'attendance\')" style="font-size:11px;padding:6px 8px;">Today</button>';
+  html += '</div>';
+  html += '<div class="stats-row">';
+  html += '<div class="stat-box"><div class="stat-num" style="color:#2d7a3e">'+p+'</div><div class="stat-label">Present</div></div>';
+  html += '<div class="stat-box"><div class="stat-num" style="color:#d35400">'+late+'</div><div class="stat-label">Late</div></div>';
+  html += '<div class="stat-box"><div class="stat-num" style="color:#c0392b">'+a+'</div><div class="stat-label">Absent</div></div>';
+  html += '<div class="stat-box"><div class="stat-num" style="color:#e67e22">'+m+'</div><div class="stat-label">Medical</div></div>';
+  html += '<div class="stat-box"><div class="stat-num" style="color:#1a4a7a">'+mi+'</div><div class="stat-label">MI</div></div>';
+  html += '<div class="stat-box"><div class="stat-num" style="color:#6b21a8">'+mia+'</div><div class="stat-label">MIA</div></div>';
+  html += '</div>';
+  html += '<div class="card"><div class="card-title">Worker Attendance \u2014 ' + fmtDate(currentDate) + '</div>';
+  if(!workers.length) { html += '<div class="empty-state">No active workers.</div>'; }
+  else { workers.forEach(function(w){ html += buildWorkerRow(w, att, dateKey); }); }
+  html += '</div>';
+  html += '<button class="btn btn-wa btn-full" onclick="sendAttWA()">Send via WhatsApp</button>';
+  return html;
+}
+
+function buildWorkerRow(w, att, dateKey) {
+  var entry = att[w.id] || {};
+  var status = entry.status || null;
+  var locked = !!status;
+  var notes = entry.notes || [];
+  var showTime = (status==='Present'||status==='Late');
+  var sc = status ? 's-'+status.toLowerCase() : 's-none';
+
+  var html = '<div class="worker-row">';
+  html += '<div style="display:flex;align-items:center;gap:8px;width:100%">';
+  html += '<div style="flex:1"><div class="worker-name">'+w.name+'</div><div class="worker-meta">Joined: '+fmtDate(w.joinDate)+'</div></div>';
+  html += '<span class="status-btn '+sc+'">'+(status||'Not Set')+(locked?' \uD83D\uDD12':'')+'</span>';
+  html += '</div>';
+
+  if(!locked) {
+    html += '<div class="sp-wrap">';
+    var statuses = [['Present','sp-present'],['Late','sp-late'],['Absent','sp-absent'],['Medical','sp-medical'],['MI','sp-mi'],['MIA','sp-mia']];
+    statuses.forEach(function(sv){
+      html += '<button class="sp-btn '+sv[1]+'" onclick="markStatus(\''+dateKey+'\',\''+w.id+'\',\''+sv[0]+'\')">'+sv[0]+'</button>';
+    });
+    html += '</div>';
+  }
+
+  if(locked && showTime) {
+    html += '<div class="time-wrap">';
+    html += '<div class="time-group"><div class="time-label">ENTRY TIME</div><div class="time-selects">';
+    html += buildTimeSelect('entryH', dateKey, w.id, entry, 'hour');
+    html += buildTimeSelect('entryM', dateKey, w.id, entry, 'min');
+    html += buildTimeSelect('entryAmPm', dateKey, w.id, entry, 'ampm');
+    html += '</div></div>';
+    html += '<div class="time-group"><div class="time-label">EXIT TIME</div><div class="time-selects">';
+    html += buildTimeSelect('exitH', dateKey, w.id, entry, 'hour');
+    html += buildTimeSelect('exitM', dateKey, w.id, entry, 'min');
+    html += buildTimeSelect('exitAmPm', dateKey, w.id, entry, 'ampm');
+    html += '</div></div>';
+    if(entry.entryH) {
+      html += '<div style="font-size:11px;color:#757575;width:100%">In: '+pad(entry.entryH)+':'+pad(entry.entryM||0)+' '+(entry.entryAmPm||'AM')+'&nbsp;&nbsp;Out: '+(entry.exitH?pad(entry.exitH)+':'+pad(entry.exitM||0)+' '+(entry.exitAmPm||'PM'):'Not set')+'</div>';
+    }
+    html += '</div>';
+  }
+
+  if(locked) {
+    html += '<div style="width:100%;margin-top:6px">';
+    notes.forEach(function(n){ html += '<div class="note-item"><span class="note-time">'+n.time+'</span> \u2014 '+n.text+'</div>'; });
+    html += '<div class="note-row"><input class="note-input" id="ni-'+w.id+'" placeholder="Add note..."><button class="btn-note" onclick="addNote(\''+dateKey+'\',\''+w.id+'\')">Add</button></div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function buildTimeSelect(field, dateKey, wid, entry, type) {
+  var html = '<select class="time-sel" onchange="saveTime(\''+dateKey+'\',\''+wid+'\',\''+field+'\',this.value)">';
+  if(type==='hour') {
+    for(var h=1;h<=12;h++) html += '<option value="'+h+'"'+(entry[field]==h?' selected':'')+'>'+pad(h)+'</option>';
+  } else if(type==='min') {
+    for(var mn=0;mn<60;mn++) html += '<option value="'+mn+'"'+(entry[field]==mn?' selected':'')+'>'+pad(mn)+'</option>';
+  } else {
+    html += '<option value="AM"'+(entry[field]==='AM'?' selected':'')+'>AM</option>';
+    html += '<option value="PM"'+(entry[field]==='PM'?' selected':'')+'>PM</option>';
+  }
+  html += '</select>';
+  return html;
+}
+
+function pad(n) { return String(n).padStart(2,'0'); }
+
+function markStatus(dateKey, wid, status) {
+  if(!DB.attendance[dateKey]) DB.attendance[dateKey] = {};
+  if(DB.attendance[dateKey][wid] && DB.attendance[dateKey][wid].status) return;
+  DB.attendance[dateKey][wid] = {status:status, notes:[], setAt: new Date().toLocaleTimeString()};
+  saveDB();
+  showTab('attendance');
+}
+
+function saveTime(dateKey, wid, field, value) {
+  if(!DB.attendance[dateKey]) DB.attendance[dateKey] = {};
+  if(!DB.attendance[dateKey][wid]) DB.attendance[dateKey][wid] = {status:null,notes:[]};
+  DB.attendance[dateKey][wid][field] = (field==='entryAmPm'||field==='exitAmPm') ? value : parseInt(value);
+  saveDB();
+}
+
+function addNote(dateKey, wid) {
+  var input = document.getElementById('ni-'+wid);
+  var text = input ? input.value.trim() : '';
+  if(!text) return;
+  if(!DB.attendance[dateKey]) DB.attendance[dateKey] = {};
+  if(!DB.attendance[dateKey][wid]) DB.attendance[dateKey][wid] = {status:null,notes:[]};
+  if(!DB.attendance[dateKey][wid].notes) DB.attendance[dateKey][wid].notes = [];
+  DB.attendance[dateKey][wid].notes.push({text:text,time:new Date().toLocaleTimeString()});
+  saveDB();
+  showTab('attendance');
+}
+
+function changeDate(days) {
+  var d = new Date(currentDate+'T00:00:00');
+  d.setDate(d.getDate()+days);
+  var nd = d.toISOString().split('T')[0];
+  if(nd<=todayStr()) { currentDate=nd; showTab('attendance'); }
+}
+
+function sendAttWA() {
+  var company = null;
+  for(var i=0;i<DB.companies.length;i++){if(DB.companies[i].id===selectedCompany){company=DB.companies[i];break;}}
+  var workers = DB.workers.filter(function(w){return w.cid===selectedCompany&&w.status==='active';});
+  var dateKey = currentDate+'_'+selectedCompany;
+  var att = DB.attendance[dateKey]||{};
+  var msg = '*Mercy Consultancy \u2014 Attendance*\n';
+  msg += 'Company: '+(company?company.name:'')+'\nDate: '+fmtDate(currentDate)+'\n\n';
+  workers.forEach(function(w){
+    var e = att[w.id]||{};
+    var s = e.status||'Not Set';
+    var t = '';
+    if((s==='Present'||s==='Late')&&e.entryH) {
+      t=' (In:'+pad(e.entryH)+':'+pad(e.entryM||0)+' '+(e.entryAmPm||'AM');
+      if(e.exitH) t+=' Out:'+pad(e.exitH)+':'+pad(e.exitM||0)+' '+(e.exitAmPm||'PM');
+      t+=')';
+    }
+    msg += '\u2022 '+w.name+': '+s+t+'\n';
+  });
+  msg += '\nBy: '+currentUser.name;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ── REPORTS ───────────────────────────────────────────────────────
+function buildReports() {
+  return '<div class="card"><div class="card-title">Generate Report</div>'
+    +'<div class="sec-label">Company</div><select class="input-field" id="co-rep"></select>'
+    +'<div class="sec-label">Report Type</div>'
+    +'<select class="input-field" id="r-type"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>'
+    +'<div class="sec-label">Date</div>'
+    +'<input type="date" class="input-field" id="r-date" value="'+todayStr()+'">'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    +'<button class="btn btn-primary" onclick="genReport()">Generate</button>'
+    +'<button class="btn btn-pdf" onclick="downloadPDF()">Download PDF</button>'
+    +'<button class="btn btn-wa" onclick="sendReportWA()">WhatsApp</button>'
+    +'</div></div><div id="report-out"></div>';
+}
+
+function localDateStr(d) { var y=d.getFullYear(); var mo=String(d.getMonth()+1).padStart(2,'0'); var dy=String(d.getDate()).padStart(2,'0'); return y+'-'+mo+'-'+dy; }
+function getDateRange(type, dateStr) {
+  var d = new Date(dateStr+'T00:00:00');
+  if(type==='daily') return [dateStr,dateStr];
+  if(type==='weekly') {
+    var day=d.getDay(); var mon=new Date(d); mon.setDate(d.getDate()-(day===0?6:day-1));
+    var sun=new Date(mon); sun.setDate(mon.getDate()+6);
+    return [localDateStr(mon), localDateStr(sun)];
+  }
+  var start=new Date(d.getFullYear(),d.getMonth(),1);
+  var end=new Date(d.getFullYear(),d.getMonth()+1,0);
+  return [localDateStr(start), localDateStr(end)];
+}
+
+function getDates(start, end) {
+  var dates=[]; var cur=new Date(start+'T00:00:00'); var endD=new Date(end+'T00:00:00');
+  while(cur<=endD){
+    var y=cur.getFullYear(); var mo=String(cur.getMonth()+1).padStart(2,'0'); var d=String(cur.getDate()).padStart(2,'0');
+    dates.push(y+'-'+mo+'-'+d);
+    cur.setDate(cur.getDate()+1);
+  }
+  return dates;
+}
+
+function genReport() {
+  var cid=document.getElementById('co-rep').value;
+  var type=document.getElementById('r-type').value;
+  var rawDate=document.getElementById('r-date').value;
+  // Normalize date to YYYY-MM-DD regardless of browser format
+  var date;
+  if(rawDate && rawDate.length===10 && rawDate[4]==='-') {
+    date = rawDate; // already YYYY-MM-DD
+  } else if(rawDate) {
+    var dp = new Date(rawDate);
+    if(!isNaN(dp)) date = dp.toISOString().split('T')[0];
+    else date = todayStr();
+  } else { date = todayStr(); }
+  var range=getDateRange(type,date); var start=range[0]; var end=range[1];
+  var dates=getDates(start,end);
+  var companies=cid==='all'?getUserCompanies():getUserCompanies().filter(function(c){return c.id===cid;});
+  var cm={Present:{bg:'#e8f5eb',txt:'#2d7a3e'},Late:{bg:'#fef3e2',txt:'#d35400'},Absent:{bg:'#fdecea',txt:'#c0392b'},Medical:{bg:'#fef3e2',txt:'#e67e22'},MI:{bg:'#e8f0fa',txt:'#1a4a7a'},MIA:{bg:'#f3e8ff',txt:'#6b21a8'}};
+  // Debug: show what attendance keys exist
+  var attKeys = Object.keys(DB.attendance||{});
+  console.log('Attendance keys:', attKeys.slice(0,5), 'Looking for dates:', dates.slice(0,2));
+  var html='';
+  companies.forEach(function(company){
+    var workers=DB.workers.filter(function(w){return w.cid===company.id;});
+    if(!workers.length) return;
+    html+='<div class="card"><div class="card-title">'+company.name+'</div><div style="overflow-x:auto"><table class="report-table"><tr><th>Worker</th>';
+    dates.forEach(function(d){html+='<th>'+d.slice(5)+'</th>';});
+    html+='<th>P</th><th>L</th><th>A</th><th>M</th><th>MI</th><th>MIA</th></tr>';
+    workers.forEach(function(w){
+      var p=0,l=0,a=0,m=0,mi=0,mia=0;
+      html+='<tr><td>'+(w.name)+(w.status==='terminated'?' <span class="badge-terminated">T</span>':'')+'</td>';
+      dates.forEach(function(d){
+        var s=(DB.attendance[d+'_'+company.id]&&DB.attendance[d+'_'+company.id][w.id])?DB.attendance[d+'_'+company.id][w.id].status:'-';
+        if(s==='Present')p++;else if(s==='Late')l++;else if(s==='Absent')a++;else if(s==='Medical')m++;else if(s==='MI')mi++;else if(s==='MIA')mia++;
+        var cl=cm[s];
+        var style=cl?'background:'+cl.bg+';color:'+cl.txt+';font-weight:700;border-radius:4px;padding:2px 5px;':'color:#aaa;';
+        html+='<td style="text-align:center"><span style="'+style+'">'+s+'</span></td>';
+      });
+      html+='<td>'+p+'</td><td>'+l+'</td><td>'+a+'</td><td>'+m+'</td><td>'+mi+'</td><td>'+mia+'</td></tr>';
+    });
+    html+='</table></div></div>';
+  });
+  document.getElementById('report-out').innerHTML=html||'<div class="empty-state">No data found.</div>';
+}
+
+function downloadPDF() {
+  genReport();
+  setTimeout(function(){
+    var out=document.getElementById('report-out');
+    if(!out||!out.innerHTML||out.innerHTML.indexOf('empty-state')!==-1){alert('Generate a report first.');return;}
+    var type=document.getElementById('r-type').value;
+    var date=document.getElementById('r-date').value;
+    var range=getDateRange(type,date);
+    var full='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Mercy Report</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#111}h2{color:#1a5c2a}p{font-size:13px;color:#555;margin-bottom:12px}.card{margin-bottom:16px;border:1px solid #ccc;border-radius:8px;padding:12px;page-break-inside:avoid}.card-title{font-weight:700;color:#1a5c2a;margin-bottom:8px}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#1a5c2a;color:#fff;padding:6px 8px;text-align:left}td{padding:5px 8px;border-bottom:1px solid #eee}.badge-terminated{background:#fdecea;color:#c0392b;font-size:9px;padding:1px 4px;border-radius:4px}</style></head><body>'
+      +'<h2>Mercy Consultancy \u2014 Attendance Report</h2>'
+      +'<p>'+type.charAt(0).toUpperCase()+type.slice(1)+' &nbsp;|&nbsp; '+fmtDate(range[0])+(range[0]!==range[1]?' to '+fmtDate(range[1]):'')+' &nbsp;|&nbsp; By: '+currentUser.name+'</p>'
+      +out.innerHTML
+      +'<p style="color:#aaa;font-size:10px;margin-top:20px;text-align:center">Mercy Consultancy Sdn Bhd \u2014 Confidential</p></body></html>';
+    var blob=new Blob([full],{type:'text/html'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='Mercy_'+type+'_'+date+'.html';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  },300);
+}
+
+function sendReportWA() {
+  genReport();
+  var type=document.getElementById('r-type').value;
+  var date=document.getElementById('r-date').value;
+  var cid=document.getElementById('co-rep').value;
+  var range=getDateRange(type,date); var start=range[0]; var end=range[1];
+  var dates=getDates(start,end);
+  var companies=cid==='all'?getUserCompanies():getUserCompanies().filter(function(c){return c.id===cid;});
+  var msg='*Mercy Consultancy \u2014 '+type.charAt(0).toUpperCase()+type.slice(1)+' Report*\nPeriod: '+fmtDate(start)+(start!==end?' to '+fmtDate(end):'')+'\n\n';
+  companies.forEach(function(company){
+    msg+='*'+company.name+'*\n';
+    var workers=DB.workers.filter(function(w){return w.cid===company.id&&w.status==='active';});
+    workers.forEach(function(w){
+      var p=0,l=0,a=0,m=0,mi=0,mia=0;
+      dates.forEach(function(d){
+        var s=(DB.attendance[d+'_'+company.id]&&DB.attendance[d+'_'+company.id][w.id])?DB.attendance[d+'_'+company.id][w.id].status:'';
+        if(s==='Present')p++;else if(s==='Late')l++;else if(s==='Absent')a++;else if(s==='Medical')m++;else if(s==='MI')mi++;else if(s==='MIA')mia++;
+      });
+      msg+='\u2022 '+w.name+': P'+p+' L'+l+' A'+a+' M'+m+' MI'+mi+' MIA'+mia+'\n';
+    });
+    msg+='\n';
+  });
+  msg+='By: '+currentUser.name;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────────
+function buildAdmin() {
+  var companies=getUserCompanies();
+  if(!selectedCompany||!companies.filter(function(c){return c.id===selectedCompany;}).length) selectedCompany=companies[0]?companies[0].id:'c6';
+  var workers=DB.workers.filter(function(w){return w.cid===selectedCompany;});
+  var active=workers.filter(function(w){return w.status==='active';});
+  var pending=workers.filter(function(w){return w.status==='pending';});
+  var terminated=workers.filter(function(w){return w.status==='terminated';});
+
+  var html='<select class="company-select" id="co-adm" onchange="selectedCompany=this.value;showTab(\'admin\')"></select>';
+  html+='<div class="card"><div class="card-title">Add Worker</div>';
+  html+='<input class="input-field" id="nw-name" placeholder="Full name">';
+  html+='<input class="input-field" id="nw-join" type="date" value="'+todayStr()+'">';
+  html+='<button class="btn btn-primary" onclick="addWorker()">Add Worker</button></div>';
+
+  html+='<div class="card"><div class="card-title">Active Workers ('+active.length+')</div>';
+  if(!active.length) html+='<div class="empty-state">No active workers.</div>';
+  active.forEach(function(w){
+    html+='<div class="worker-admin-row"><div style="flex:1"><div class="wi-name">'+w.name+'</div><div class="wi-meta">Joined: '+fmtDate(w.joinDate)+'</div></div>';
+    html+='<span class="badge-active">Active</span>';
+    html+='<button class="btn btn-danger" onclick="requestTerminate(\''+w.id+'\')">Terminate</button></div>';
+  });
+  html+='</div>';
+
+  if(pending.length) {
+    html+='<div class="card"><div class="card-title" style="color:#e67e22">Pending Termination ('+pending.length+')</div>';
+    pending.forEach(function(w){
+      html+='<div class="worker-admin-row"><div style="flex:1"><div class="wi-name">'+w.name+'</div><div class="wi-meta">Requested: '+fmtDate(w.pendingDate)+' by '+w.requestedBy+'</div></div>';
+      html+='<span class="badge-pending">Pending</span>';
+      html+='<button class="btn btn-secondary" onclick="cancelTerminate(\''+w.id+'\')">Cancel</button></div>';
+    });
+    html+='</div>';
+  }
+
+  if(terminated.length) {
+    html+='<div class="card"><div class="card-title">Terminated ('+terminated.length+')</div>';
+    terminated.forEach(function(w){
+      html+='<div class="worker-admin-row"><div style="flex:1"><div class="wi-name">'+w.name+'</div><div class="wi-meta">Terminated: '+fmtDate(w.termDate)+'</div></div>';
+      html+='<span class="badge-terminated">Terminated</span></div>';
+    });
+    html+='</div>';
+  }
+  return html;
+}
+
+function addWorker() {
+  var name=document.getElementById('nw-name').value.trim();
+  var join=document.getElementById('nw-join').value;
+  if(!name){alert('Enter a name.');return;}
+  DB.workers.push({id:'w'+Date.now(),cid:selectedCompany,name:name,joinDate:join,status:'active'});
+  saveDB(); showTab('admin');
+}
+
+function requestTerminate(wid) {
+  if(!confirm('Submit termination request? Master approval required.')) return;
+  for(var i=0;i<DB.workers.length;i++){if(DB.workers[i].id===wid){DB.workers[i].status='pending';DB.workers[i].pendingDate=todayStr();DB.workers[i].requestedBy=currentUser.name;break;}}
+  saveDB(); showTab('admin');
+}
+
+function cancelTerminate(wid) {
+  for(var i=0;i<DB.workers.length;i++){if(DB.workers[i].id===wid){DB.workers[i].status='active';delete DB.workers[i].pendingDate;delete DB.workers[i].requestedBy;break;}}
+  saveDB(); showTab(currentTab);
+}
+
+function approveTerminate(wid) {
+  if(!confirm('Approve termination?')) return;
+  for(var i=0;i<DB.workers.length;i++){if(DB.workers[i].id===wid){DB.workers[i].status='terminated';DB.workers[i].termDate=todayStr();delete DB.workers[i].pendingDate;delete DB.workers[i].requestedBy;break;}}
+  saveDB(); showTab('master');
+}
+
+// ── MASTER ────────────────────────────────────────────────────────
+function buildMasterControl() {
+  var pending=DB.workers.filter(function(w){return w.status==='pending';});
+  var html='';
+
+  if(pending.length) {
+    html+='<div class="card" style="border:2px solid #e67e22"><div class="card-title" style="color:#e67e22">Termination Approvals ('+pending.length+')</div>';
+    pending.forEach(function(w){
+      var co=null; for(var i=0;i<DB.companies.length;i++){if(DB.companies[i].id===w.cid){co=DB.companies[i];break;}}
+      html+='<div class="worker-admin-row"><div style="flex:1"><div class="wi-name">'+w.name+'</div><div class="wi-meta">'+(co?co.name:'')+' \u2014 '+fmtDate(w.pendingDate)+' by '+w.requestedBy+'</div></div>';
+      html+='<button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="approveTerminate(\''+w.id+'\')">Approve</button>';
+      html+='<button class="btn btn-secondary" style="font-size:12px;padding:6px 12px" onclick="cancelTerminate(\''+w.id+'\')">Reject</button></div>';
+    });
+    html+='</div>';
+  }
+
+  html+='<div class="card"><div class="card-title">Companies ('+DB.companies.length+')</div>';
+  DB.companies.forEach(function(c){
+    html+='<div class="worker-admin-row"><div style="flex:1;font-weight:500">'+c.name+'</div><button class="btn btn-danger" onclick="deleteCompany(\''+c.id+'\')">Delete</button></div>';
+  });
+  html+='<div style="margin-top:12px"><input class="input-field" id="nc-name" placeholder="New company name"><button class="btn btn-primary" onclick="addCompany()">Add Company</button></div></div>';
+
+  html+='<div class="card"><div class="card-title">Admin Accounts</div>';
+  DB.users.admin.forEach(function(a,i){
+    html+='<div style="padding:10px 0;border-bottom:1px solid #f5f5f5"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+    html+='<div style="flex:1"><div style="font-weight:600">'+a.name+'</div><div style="font-size:11px;color:#757575">@'+a.username+'</div></div>';
+    html+='<button class="btn btn-danger" onclick="deleteAdmin('+i+')">Remove</button></div>';
+    html+='<div class="sec-label">Companies:</div><div class="company-check">';
+    DB.companies.forEach(function(c){
+      html+='<label><input type="checkbox" '+(( a.companies||[]).indexOf(c.id)!==-1?'checked':'')+' onchange="toggleAdminCo('+i+',\''+c.id+'\',this.checked)"> '+c.name+'</label>';
+    });
+    html+='</div></div>';
+  });
+  html+='<div style="margin-top:12px"><input class="input-field" id="na-name" placeholder="Full name"><input class="input-field" id="na-user" placeholder="Username"><input class="input-field" id="na-pass" placeholder="Password" type="password"><button class="btn btn-primary" onclick="addAdmin()">Add Admin</button></div></div>';
+
+  html+='<div class="card"><div class="card-title">Supervisor Accounts</div>';
+  DB.users.supervisor.forEach(function(s,i){
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f5f5f5">';
+    html+='<div style="flex:1"><div style="font-weight:600">'+s.name+'</div><div style="font-size:11px;color:#757575">@'+s.username+'</div></div>';
+    html+='<button class="btn btn-danger" onclick="deleteSupervisor('+i+')">Remove</button></div>';
+  });
+  html+='<div style="margin-top:12px"><input class="input-field" id="ns-name" placeholder="Full name"><input class="input-field" id="ns-user" placeholder="Username"><input class="input-field" id="ns-pass" placeholder="Password" type="password"><button class="btn btn-primary" onclick="addSupervisor()">Add Supervisor</button></div></div>';
+
+  html+='<div class="card"><div class="card-title">Data Management</div><div style="display:flex;gap:8px;flex-wrap:wrap">';
+  html+='<button class="btn btn-primary" onclick="exportData()">Export Backup</button>';
+  html+='<button class="btn btn-secondary" onclick="importData()">Import Backup</button>';
+  html+='<button class="btn btn-danger" onclick="clearAttendance()">Clear Attendance</button>';
+  html+='</div></div>';
+  return html;
+}
+
+function addCompany(){var n=document.getElementById('nc-name').value.trim();if(!n)return;DB.companies.push({id:'c'+Date.now(),name:n});saveDB();showTab('master');}
+function deleteCompany(cid){if(!confirm('Delete company?'))return;DB.companies=DB.companies.filter(function(c){return c.id!==cid;});DB.workers=DB.workers.filter(function(w){return w.cid!==cid;});saveDB();showTab('master');}
+function toggleAdminCo(idx,cid,checked){var a=DB.users.admin[idx];if(!a.companies)a.companies=[];if(checked){if(a.companies.indexOf(cid)===-1)a.companies.push(cid);}else{a.companies=a.companies.filter(function(c){return c!==cid;});}saveDB();}
+function addAdmin(){var n=document.getElementById('na-name').value.trim(),u=document.getElementById('na-user').value.trim(),p=document.getElementById('na-pass').value;if(!n||!u||!p){alert('Fill all fields.');return;}DB.users.admin.push({username:u,password:p,name:n,companies:[]});saveDB();showTab('master');}
+function deleteAdmin(i){if(!confirm('Remove admin?'))return;DB.users.admin.splice(i,1);saveDB();showTab('master');}
+function addSupervisor(){var n=document.getElementById('ns-name').value.trim(),u=document.getElementById('ns-user').value.trim(),p=document.getElementById('ns-pass').value;if(!n||!u||!p){alert('Fill all fields.');return;}DB.users.supervisor.push({username:u,password:p,name:n,companies:DB.companies.map(function(c){return c.id;})});saveDB();showTab('master');}
+function deleteSupervisor(i){if(!confirm('Remove supervisor?'))return;DB.users.supervisor.splice(i,1);saveDB();showTab('master');}
+function exportData(){var blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mercy_backup_'+todayStr()+'.json';a.click();}
+function importData(){var input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=function(e){var file=e.target.files[0];var reader=new FileReader();reader.onload=function(ev){try{DB=JSON.parse(ev.target.result);saveDB();showTab('master');alert('Imported.');}catch(err){alert('Invalid file.');}};reader.readAsText(file);};input.click();}
+function clearAttendance(){if(!confirm('Clear ALL attendance data?'))return;DB.attendance={};saveDB();showTab('master');}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js">
+function renderWorkerAttRow(w, att, dateKey) {
+  var entry = att[w.id] || {};
+  var status = entry.status || null;
+  var locked = !!status;
+  var showTime = status === 'Present' || status === 'Late';
+  var statusClass = status ? 'status-' + status.toLowerCase() : 'status-none';
+
+  var html = '<div class="worker-row" style="flex-direction:column;align-items:flex-start">';
+  html += '<div style="display:flex;align-items:center;gap:8px;width:100%">';
+  html += '<div style="flex:1"><div class="worker-name">' + w.name + '</div>';
+  html += '<div class="worker-meta">Joined: ' + fmt(w.joinDate) + '</div></div>';
+  html += '<span class="status-btn ' + statusClass + '">' + (status || 'Not Set') + (locked ? ' &#128274;' : '') + '</span>';
+  html += '</div>';
+
+  if(!locked) {
+    var pairs = [['Present','sp-present'],['Late','sp-late'],['Absent','sp-absent'],['Medical','sp-medical'],['MI','sp-mi'],['MIA','sp-mia']];
+    html += '<div class="status-picker">';
+    for(var pi=0; pi<pairs.length; pi++) {
+      var dkEnc = encodeURIComponent(dateKey);
+      var widEnc = encodeURIComponent(w.id);
+      var stEnc = pairs[pi][0];
+      html += '<button class="sp-btn ' + pairs[pi][1] + '" onclick="setStatusEnc(decodeURIComponent('' + dkEnc + ''),decodeURIComponent('' + widEnc + ''),'' + stEnc + '')">' + pairs[pi][0] + '</button>';
+    }
+    html += '</div>';
+  }
+
+  if(locked && showTime) {
+    var dkE = encodeURIComponent(dateKey);
+    var wE = encodeURIComponent(w.id);
+    function buildSel(field, max, padded, current, isAmPm) {
+      var s = '<select style="flex:1;padding:6px;border:1px solid #e0e0e0;border-radius:6px;font-size:12px;" onchange="saveTimeEnc(decodeURIComponent('' + dkE + ''),decodeURIComponent('' + wE + ''),'' + field + '',this.value)">';
+      if(isAmPm) {
+        s += '<option value="AM"' + (current==='AM'?' selected':'') + '>AM</option>';
+        s += '<option value="PM"' + (current==='PM'?' selected':'') + '>PM</option>';
+      } else {
+        for(var n=1; n<=max; n++) {
+          var val = padded ? String(n).padStart(2,'0') : n;
+          s += '<option value="' + n + '"' + (current==n?' selected':'') + '>' + String(n).padStart(2,'0') + '</option>';
+        }
+      }
+      return s + '</select>';
+    }
+    function buildSelMin(field, current) {
+      var s = '<select style="flex:1;padding:6px;border:1px solid #e0e0e0;border-radius:6px;font-size:12px;" onchange="saveTimeEnc(decodeURIComponent('' + dkE + ''),decodeURIComponent('' + wE + ''),'' + field + '',this.value)">';
+      for(var n=0; n<60; n++) {
+        s += '<option value="' + n + '"' + (current==n?' selected':'') + '>' + String(n).padStart(2,'0') + '</option>';
+      }
+      return s + '</select>';
+    }
+
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">';
+    html += '<div style="flex:1;min-width:140px"><div style="font-size:11px;color:#757575;font-weight:600;margin-bottom:4px">ENTRY TIME</div>';
+    html += '<div style="display:flex;gap:4px">';
+    html += buildSel('entryH', 12, true, entry.entryH, false);
+    html += buildSelMin('entryM', entry.entryM);
+    html += buildSel('entryAmPm', 0, false, entry.entryAmPm||'AM', true);
+    html += '</div></div>';
+    html += '<div style="flex:1;min-width:140px"><div style="font-size:11px;color:#757575;font-weight:600;margin-bottom:4px">EXIT TIME</div>';
+    html += '<div style="display:flex;gap:4px">';
+    html += buildSel('exitH', 12, true, entry.exitH, false);
+    html += buildSelMin('exitM', entry.exitM);
+    html += buildSel('exitAmPm', 0, false, entry.exitAmPm||'PM', true);
+    html += '</div></div>';
+    if(entry.entryH) {
+      html += '<div style="font-size:11px;color:#757575;width:100%;margin-top:4px">In: ' + String(entry.entryH).padStart(2,'0') + ':' + String(entry.entryM||0).padStart(2,'0') + ' ' + (entry.entryAmPm||'AM') + '&nbsp;&nbsp;Out: ' + (entry.exitH ? String(entry.exitH).padStart(2,'0')+':'+String(entry.exitM||0).padStart(2,'0')+' '+(entry.exitAmPm||'PM') : 'Not set') + '</div>';
+    }
+    html += '</div>';
+  }
+
+  if(locked) {
+    var notes = entry.notes || [];
+    html += '<div style="width:100%;margin-top:6px">';
+    for(var ni=0; ni<notes.length; ni++) {
+      html += '<div class="note-item"><span class="note-time">' + notes[ni].time + '</span> — ' + notes[ni].text + '</div>';
+    }
+    var dkN = encodeURIComponent(dateKey);
+    var wN = encodeURIComponent(w.id);
+    html += '<div class="note-row"><input class="note-input" id="note-' + w.id + '" placeholder="Add note..."><button class="btn-note" onclick="addNoteEnc(decodeURIComponent('' + dkN + ''),decodeURIComponent('' + wN + ''))">Add</button></div>';
+    html += '</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function setStatusEnc(dateKey, wid, status) {
+  setStatus(dateKey, wid, status);
+}
+
+function saveTimeEnc(dateKey, wid, field, value) {
+  saveTime(dateKey, wid, field, value);
+}
+
+function addNoteEnc(dateKey, wid) {
+  addNote(dateKey, wid);
+}
+
+</script>
+
+</body>
+</html>
