@@ -404,7 +404,7 @@ function fmtDate(d) {
 // Step 1: Go to https://jsonbin.io → Sign up free → Go to API Keys → Copy your Master Key
 // Step 2: Paste it below replacing the empty string
 var JSONBIN_API_KEY = '$2a$10$e4C9sU9IsWPOxlybw/1Ne.x38jkVIpORNRKPyg2jPuU9iwTTiNnuq';
-var JSONBIN_BIN_ID = '69e1b4f536566621a8c12a16';
+var JSONBIN_BIN_ID = '69e1b574aaba8821970a795c';
 var CLOUD_SYNC = true;
 var syncStatus = 'idle'; // 'saving' | 'loading' | 'idle' | 'error'
 
@@ -427,34 +427,46 @@ function saveDB() {
   setSyncStatus('saving');
   fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID, {
     method: 'PUT',
+    mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
       'X-Master-Key': JSONBIN_API_KEY,
-      'X-Bin-Versioning': 'false'
+      'X-Bin-Versioning': 'false',
+      'X-Access-Control-Allow-Origin': '*'
     },
     body: JSON.stringify(DB)
   }).then(function(r){ return r.json(); })
-    .then(function(){ setSyncStatus('idle'); })
-    .catch(function(){ setSyncStatus('error'); });
+    .then(function(d){ if(d.metadata || d.record) setSyncStatus('idle'); else setSyncStatus('error'); })
+    .catch(function(e){ console.warn('Sync error:',e); setSyncStatus('error'); });
 }
 
 function loadDB(callback) {
+  // Load local first so app starts instantly
   try {
     ['mercy_v4','mercy_v3','mercy_v2','mercy_v1','mercy_db'].forEach(function(k){localStorage.removeItem(k);});
     var s = localStorage.getItem('mercy_v9');
     if(s) { var saved = JSON.parse(s); if(saved && saved.version === 9) { DB = saved; } }
   } catch(e){}
-  if (!CLOUD_SYNC) { if(callback) callback(); return; }
+
+  if (!CLOUD_SYNC) { setSyncStatus('idle'); if(callback) callback(); return; }
+
   setSyncStatus('loading');
   fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID + '/latest', {
-    headers: {'X-Master-Key': JSONBIN_API_KEY}
+    mode: 'cors',
+    headers: { 'X-Master-Key': JSONBIN_API_KEY, 'X-Bin-Meta': 'false' }
   }).then(function(r){ return r.json(); })
     .then(function(d){
-      if (d.record && d.record.version === 9) {
-        DB = d.record;
-        try { localStorage.setItem('mercy_v9', JSON.stringify(DB)); } catch(e){}
-        setSyncStatus('idle');
+      if (d.record && d.record.version === 9 && d.record.lastForceSyncAt) {
+        // Only use cloud data if master has done a Force Sync (has real data)
+        var localSyncAt = DB.lastForceSyncAt || '';
+        var cloudSyncAt = d.record.lastForceSyncAt || '';
+        if (cloudSyncAt > localSyncAt) {
+          // Cloud is newer — use it
+          DB = d.record;
+          try { localStorage.setItem('mercy_v9', JSON.stringify(DB)); } catch(e){}
+        }
       }
+      setSyncStatus('idle');
       if(callback) callback();
     })
     .catch(function(){
@@ -912,6 +924,17 @@ function buildMasterControl() {
   var pending=DB.workers.filter(function(w){return w.status==='pending';});
   var html='';
 
+  // Cloud sync status panel
+  html+='<div class="card" style="border:1.5px solid #10b981;margin-bottom:14px;">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">' +
+      '<div>' +
+        '<div class="card-title" style="color:#10b981;margin-bottom:2px;">&#9729; Cloud Sync</div>' +
+        '<div style="font-size:12px;color:#94a3b8;">All user/company/worker changes auto-sync to cloud. Press Force Sync if a device is not showing latest data.</div>' +
+      '</div>' +
+      '<button class="btn btn-primary" style="background:#10b981;border-color:#10b981;white-space:nowrap;" onclick="forceSyncToCloud()">&#8593; Force Sync Now</button>' +
+    '</div>' +
+  '</div>';
+
   if(pending.length) {
     html+='<div class="card" style="border:2px solid #e67e22"><div class="card-title" style="color:#e67e22">Termination Approvals ('+pending.length+')</div>';
     pending.forEach(function(w){
@@ -961,6 +984,37 @@ function buildMasterControl() {
 function addCompany(){var n=document.getElementById('nc-name').value.trim();if(!n)return;DB.companies.push({id:'c'+Date.now(),name:n});saveDB();showTab('master');}
 function deleteCompany(cid){if(!confirm('Delete company?'))return;DB.companies=DB.companies.filter(function(c){return c.id!==cid;});DB.workers=DB.workers.filter(function(w){return w.cid!==cid;});saveDB();showTab('master');}
 function toggleAdminCo(idx,cid,checked){var a=DB.users.admin[idx];if(!a.companies)a.companies=[];if(checked){if(a.companies.indexOf(cid)===-1)a.companies.push(cid);}else{a.companies=a.companies.filter(function(c){return c!==cid;});}saveDB();}
+function forceSyncToCloud() {
+  if (!confirm('This will push all your current data (companies, workers, users) to the cloud so all other devices get it. Continue?')) return;
+  setSyncStatus('saving');
+  // Add a sync timestamp so other devices know to pull
+  DB.lastForceSyncAt = new Date().toISOString();
+  try { localStorage.setItem('mercy_v9', JSON.stringify(DB)); } catch(e){}
+  fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID, {
+    method: 'PUT',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': JSONBIN_API_KEY,
+      'X-Bin-Versioning': 'false'
+    },
+    body: JSON.stringify(DB)
+  }).then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.metadata || d.record) {
+        setSyncStatus('idle');
+        alert('✓ Sync complete!\n\nAll devices will get the latest data when they next load the app.\n\nTell staff to refresh/reopen the app.');
+      } else {
+        setSyncStatus('error');
+        alert('⚠ Sync failed. Make sure the app is open from the GitHub Pages URL, not a local file.');
+      }
+    })
+    .catch(function(e){
+      setSyncStatus('error');
+      alert('⚠ Sync failed: ' + e.message + '\n\nOpen the app from https://jonathan198924.github.io/mercyattendance/ and try again.');
+    });
+}
+
 function addAdmin(){var n=document.getElementById('na-name').value.trim(),u=document.getElementById('na-user').value.trim(),p=document.getElementById('na-pass').value;if(!n||!u||!p){alert('Fill all fields.');return;}DB.users.admin.push({username:u,password:p,name:n,companies:[]});saveDB();showTab('master');}
 function deleteAdmin(i){if(!confirm('Remove admin?'))return;DB.users.admin.splice(i,1);saveDB();showTab('master');}
 function addSupervisor(){var n=document.getElementById('ns-name').value.trim(),u=document.getElementById('ns-user').value.trim(),p=document.getElementById('ns-pass').value;if(!n||!u||!p){alert('Fill all fields.');return;}DB.users.supervisor.push({username:u,password:p,name:n,companies:DB.companies.map(function(c){return c.id;})});saveDB();showTab('master');}
