@@ -404,7 +404,7 @@ function fmtDate(d) {
 // Step 1: Go to https://jsonbin.io → Sign up free → Go to API Keys → Copy your Master Key
 // Step 2: Paste it below replacing the empty string
 var JSONBIN_API_KEY = '$2a$10$e4C9sU9IsWPOxlybw/1Ne.x38jkVIpORNRKPyg2jPuU9iwTTiNnuq';
-var JSONBIN_BIN_ID = '';
+var JSONBIN_BIN_ID = '69e1b4f536566621a8c12a16';
 var CLOUD_SYNC = true;
 var syncStatus = 'idle'; // 'saving' | 'loading' | 'idle' | 'error'
 
@@ -418,54 +418,35 @@ function setSyncStatus(s, msg) {
 }
 
 function getBinId() {
-  return localStorage.getItem('mercy_bin_id') || JSONBIN_BIN_ID;
+  return JSONBIN_BIN_ID; // always use the shared central bin
 }
 
 function saveDB() {
-  // Always save locally first as backup
   try { localStorage.setItem('mercy_v9', JSON.stringify(DB)); } catch(e){}
-  // Then push to cloud
   if (!CLOUD_SYNC) return;
-  var binId = getBinId();
   setSyncStatus('saving');
-  if (binId) {
-    // Update existing bin
-    fetch('https://api.jsonbin.io/v3/b/' + binId, {
-      method: 'PUT',
-      headers: {'Content-Type':'application/json','X-Master-Key': JSONBIN_API_KEY,'X-Bin-Versioning':'false'},
-      body: JSON.stringify(DB)
-    }).then(function(r){ return r.json(); })
-      .then(function(){ setSyncStatus('idle'); })
-      .catch(function(){ setSyncStatus('error'); });
-  } else {
-    // Create new bin
-    fetch('https://api.jsonbin.io/v3/b', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','X-Master-Key': JSONBIN_API_KEY,'X-Bin-Name':'MercyAttendance','X-Collection-Id':''},
-      body: JSON.stringify(DB)
-    }).then(function(r){ return r.json(); })
-      .then(function(d){
-        if (d.metadata && d.metadata.id) {
-          localStorage.setItem('mercy_bin_id', d.metadata.id);
-          setSyncStatus('idle');
-        }
-      }).catch(function(){ setSyncStatus('error'); });
-  }
+  fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': JSONBIN_API_KEY,
+      'X-Bin-Versioning': 'false'
+    },
+    body: JSON.stringify(DB)
+  }).then(function(r){ return r.json(); })
+    .then(function(){ setSyncStatus('idle'); })
+    .catch(function(){ setSyncStatus('error'); });
 }
 
 function loadDB(callback) {
-  // Always load local first so app starts instantly
   try {
     ['mercy_v4','mercy_v3','mercy_v2','mercy_v1','mercy_db'].forEach(function(k){localStorage.removeItem(k);});
     var s = localStorage.getItem('mercy_v9');
     if(s) { var saved = JSON.parse(s); if(saved && saved.version === 9) { DB = saved; } }
   } catch(e){}
-
-  // Then try to pull latest from cloud
-  var binId = getBinId();
-  if (!CLOUD_SYNC || !binId) { if(callback) callback(); return; }
+  if (!CLOUD_SYNC) { if(callback) callback(); return; }
   setSyncStatus('loading');
-  fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', {
+  fetch('https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID + '/latest', {
     headers: {'X-Master-Key': JSONBIN_API_KEY}
   }).then(function(r){ return r.json(); })
     .then(function(d){
