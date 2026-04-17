@@ -378,11 +378,11 @@ var DB = {
     master: [{username:'master',password:'master123',name:'Jonathan Varkey'}],
     admin: [
       {username:'admin',password:'admin123',name:'Selva Kumar',companies:['c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24']},
-      {username:'joey',password:'joey123',name:'Joey Tan',companies:['c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24']}
+      {username:'joey',password:'joey123',name:'Joey Tan',companies:['c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24']},
+      {username:'dasmond',password:'dasmond123',name:'Dasmond Abraham',companies:['c10','c11','c12','c13','c14','c15','c16','c17','c18','c19','c20','c21','c22','c23','c24']}
     ],
     supervisor: [
-      {username:'supervisor',password:'super123',name:'Field Supervisor 1',companies:['c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24']},
-      {username:'dasmond',password:'dasmond123',name:'Dasmond Abraham',companies:['c10','c11','c12','c13','c14','c15','c16','c17','c18','c19','c20','c21','c22','c23','c24']}
+      {username:'supervisor',password:'super123',name:'Field Supervisor 1',companies:['c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24']}
     ]
   }
 };
@@ -448,6 +448,32 @@ function loadDB(callback) {
     var s = localStorage.getItem('mercy_v9');
     if(s) { var saved = JSON.parse(s); if(saved && saved.version === 9) { DB = saved; } }
   } catch(e){}
+
+  // ALWAYS merge hardcoded users into loaded DB
+  // This ensures any user added to the file always works regardless of localStorage
+  var hardcodedUsers = {
+    master: [{username:'master',password:'master123',name:'Jonathan Varkey'}],
+    admin: [
+      {username:'admin',password:'admin123',name:'Selva Kumar',companies:['c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18','c19','c20','c21','c22','c23','c24']},
+      {username:'joey',password:'joey123',name:'Joey Tan',companies:['c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18','c19','c20','c21','c22','c23','c24']},
+      {username:'dasmond',password:'dasmond123',name:'Dasmond Abraham',companies:['c10','c11','c12','c13','c14','c15','c16','c17','c18','c19','c20','c21','c22','c23','c24']}
+    ],
+    supervisor: [
+      {username:'supervisor',password:'super123',name:'Field Supervisor 1',companies:['c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18','c19','c20','c21','c22','c23','c24']}
+    ]
+  };
+  ['master','admin','supervisor'].forEach(function(role) {
+    if (!DB.users[role]) DB.users[role] = [];
+    hardcodedUsers[role].forEach(function(hu) {
+      var exists = DB.users[role].some(function(u){ return u.username === hu.username; });
+      if (!exists) DB.users[role].push(hu);
+      else {
+        // Update password and name in case they changed in file
+        DB.users[role].forEach(function(u){ if(u.username===hu.username){ u.password=hu.password; u.name=hu.name; } });
+      }
+    });
+  });
+  try { localStorage.setItem('mercy_v9', JSON.stringify(DB)); } catch(e){}
 
   if (!CLOUD_SYNC) { setSyncStatus('idle'); if(callback) callback(); return; }
 
